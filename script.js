@@ -66,8 +66,11 @@ window.onload = function () {
 
         forms = {
             t: {
-                // 0        1        2          -> y
-                0: [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
+                //
+                // 0            1           2          -> y
+                0: [[0, 1, 0],
+                    [1, 1, 1],
+                    [0, 0, 0]],
                 //  0 1 2    0 1 2    0 1 2     -> x
                 1: [[0, 1, 0],
                     [0, 1, 1],
@@ -180,14 +183,51 @@ window.onload = function () {
         }
 
         draw() {
-            for (let y = 0; y < this.forms[this.form][this.orientation].length; y++) {
-                for (let x = 0; x < this.forms[this.form][this.orientation][y].length; x++) {
+            for (let y = 0; y <= this.borders[this.form][this.orientation][0]; y++) {
+                for (let x = this.borders[this.form][this.orientation][1]; x <= this.borders[this.form][this.orientation][2]; x++) {
                     if (this.forms[this.form][this.orientation][y][x] !== 0) {
                         drawStone(this.positionX + x, this.positionY + y, this.color);
                     }
                 }
             }
         }
+    // todo: Hier werden die Kollisionen berechnet / in function collide liegt auskommentiert der andere Versuch!
+      /*  calculateBorder(){
+            // calculate Bottom
+            for(let o=0; o<=3; o++) {
+                for (let y = 0; y < this.forms[this.form][o].length; y++) {
+                    for (let x = 0; x < this.forms[this.form][o][y].length; x++) {
+                        if (this.forms[this.form][o][y][x] > 0) {
+                            this.bottomOfStone[o] = y;
+                        }
+                    }
+                }
+            }
+            //calculate Left
+            for(let o=0; o<=3; o++) {
+                let minX = 0;
+                for (let y = 0; y < this.forms[this.form][o].length; y++) {
+                    let startsWithEmptyColums = 0;
+                    for (let x = 0; x < this.forms[this.form][o][y].length; x++) {
+                        if (this.forms[this.form][o][y][x] === 0) {
+                            startsWithEmptyColums++;
+                        }
+
+                    }
+                }
+                this.leftOfStone[o] = minX;
+            }
+            //calculate Right
+            for(let o=0; o<=3; o++) {
+                for (let y = 0; y < this.forms[this.form][o].length; y++) {
+                    for (let x = 0; x < this.forms[this.form][o][y].length; x++) {
+                        if (this.forms[this.form][o][y][x] > 0) {
+                            this.rightOfStone[o] = x;
+                        }
+                    }
+                }
+            }
+        } */
 
 
     }
@@ -216,41 +256,63 @@ window.onload = function () {
         }
 
         collide() {
-            let bottomOfStone = 0;
-            for (let i = 0; i < this.fallingStone.forms[this.fallingStone.form][this.fallingStone.orientation].length; i++) {
-                for (let j = 0; j < this.fallingStone.forms[this.fallingStone.form][this.fallingStone.orientation][i].length; j++) {
-                    if (this.fallingStone.forms[this.fallingStone.form][this.fallingStone.orientation][i][j] > 0) {
-                        bottomOfStone = i;
-                    }
-                }
-            }
-
-            //console.log(bottomOfStone + this.fallingStone.positionY);
-            //console.log(stone.countHeight - 1);
+            /*let bottomOfStone = 0;
+            let rightOfStone = 0;
+            let leftOfStone = 0;*/
 
             // has form arrived at bottom of matrixTable?
-            if (bottomOfStone + this.fallingStone.positionY === (stone.countHeight - 1)) {
-                this.newInterval(bottomOfStone);
+            if (this.fallingStone.borders[this.fallingStone.form][this.fallingStone.orientation][0] + this.fallingStone.positionY === (stone.countHeight - 1)) {
+                this.newInterval();
             }
-            // are there stones in the way?
-            for (let y = 0; y <= bottomOfStone; y++) {
-                for (let x = 0; x < this.fallingStone.forms[this.fallingStone.form][this.fallingStone.orientation][y].length; x++) {
+            // are there stones in the way? bottom
+            for (let y = 0; y <= this.fallingStone.borders[this.fallingStone.form][this.fallingStone.orientation][0]; y++) {
+                for (let x = 0; x <= this.fallingStone.borders[this.fallingStone.form][this.fallingStone.orientation][2]; x++) {
                     if (this.fallingStone.forms[this.fallingStone.form][this.fallingStone.orientation][y][x] !== 0) {
                         if (this.matrixTable[y + this.fallingStone.positionY][x + this.fallingStone.positionX] !== 0) {
                             this.fallingStone.positionY--;
-                            this.newInterval(bottomOfStone);
+                            this.newInterval();
                         }
                     }
                 }
             }
+            /*
+            // had form collided with left side
+            if (leftOfStone + this.fallingStone.positionX === 0) {
+                game.fallingStone.positionX++;
+            }
+            // are there stones in the way? left
+            for (let y = 0; y <= leftOfStone; y++) {
+                for (let x = 0; x < this.fallingStone.border[this.fallingStone.form][this.fallingStone.orientation][y].length; x++) {
+                    if (this.fallingStone.border[this.fallingStone.form][this.fallingStone.orientation][y][x] !== 0) {
+                        if (this.matrixTable[y + this.fallingStone.positionY][x + this.fallingStone.positionX] !== 0) {
+                            this.fallingStone.positionY--;
+                            this.newInterval(leftOfStone);
+                        }
+                    }
+                }
+            }
+
+            // had form collided with right side
+            if ((rightOfStone + this.fallingStone.positionX) === (stone.countWidth -1)) {
+                game.fallingStone.positionX--;
+            }
+            // are there stones in the way? right
+            for (let y = 0; y <= rightOfStone; y++) {
+                for (let x = 0; x < this.fallingStone.border[this.fallingStone.form][this.fallingStone.orientation][y].length; x++) {
+                    if (this.fallingStone.border[this.fallingStone.form][this.fallingStone.orientation][y][x] !== 0) {
+                        if (this.matrixTable[y + this.fallingStone.positionY][x + this.fallingStone.positionX] !== 0) {
+                            this.fallingStone.positionY--;
+                            this.newInterval(rightOfStone);
+                        }
+                    }
+                }
+            }*/
         }
 
-        newInterval(bottomOfStone) {
-            console.log(this.fallingStone.forms[this.fallingStone.form][this.fallingStone.orientation][0].length);
-
+        newInterval() {
             // copy Formation into Matrix:
-            for (let y = 0; y <= bottomOfStone; y++) {
-                for (let x = 0; x < this.fallingStone.forms[this.fallingStone.form][this.fallingStone.orientation][y].length; x++) {
+            for (let y = 0; y <= this.fallingStone.borders[this.fallingStone.form][this.fallingStone.orientation][0]; y++) {
+                for (let x = 0; x <= this.fallingStone.borders[this.fallingStone.form][this.fallingStone.orientation][2]; x++) {
                     if (this.fallingStone.forms[this.fallingStone.form][this.fallingStone.orientation][y][x] !== 0) {
                         this.matrixTable[y + this.fallingStone.positionY][x + this.fallingStone.positionX] = this.fallingStone.color;
                     }
@@ -273,7 +335,6 @@ window.onload = function () {
                     }
                 }
             }
-            //console.log(this.matrixTable);
         }
 
         gameOver() {
@@ -354,3 +415,5 @@ window.onload = function () {
 
 
 }
+
+
